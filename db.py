@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import pandas as pd
 
 DB_PATH = Path("data/puantaj.db")
@@ -65,12 +65,12 @@ def init_db():
         c.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('seventh_day_overtime_hours','9')")
         c.commit()
 
-def add_employee(name, employee_no, card_no, department, shift_start, shift_end):
+def add_employee(name, employee_no, card_no, department):
     with conn() as c:
         c.execute("""INSERT INTO employees
-        (name,employee_no,card_no,department,shift_start,shift_end,created_at)
-        VALUES(?,?,?,?,?,?,?)""",
-        (name, employee_no, card_no, department, shift_start, shift_end,
+        (name,employee_no,card_no,department,created_at)
+        VALUES(?,?,?,?,?)""",
+        (name, employee_no, card_no, department,
          datetime.now().isoformat(timespec="seconds")))
         c.commit()
 
@@ -101,6 +101,20 @@ def save_punch(employee_id, card_no, timestamp, source="CARD"):
         c.execute("INSERT INTO punches(employee_id,card_no,timestamp,source) VALUES(?,?,?,?)",
                   (employee_id, card_no, timestamp.isoformat(timespec="seconds"), source))
         c.commit()
+
+def get_punch_status(employee_id, punch_date):
+    """
+    Belirli bir gündeki kart okutuşların sayısını döndürür.
+    Giriş/Çıkış belirleme için kullanılır:
+    - 0: Gün içinde ilk kart (Giriş)
+    - 1+: Sonraki kartlar (Çıkış)
+    """
+    with conn() as c:
+        count = c.execute("""
+        SELECT COUNT(*) as cnt FROM punches
+        WHERE employee_id=? AND date(timestamp)=?
+        """, (employee_id, punch_date.isoformat())).fetchone()
+    return count["cnt"] if count else 0
 
 def get_punches(start_date, end_date):
     with conn() as c:
