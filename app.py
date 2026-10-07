@@ -21,13 +21,6 @@ def month_bounds(d):
     last = (first + timedelta(days=32)).replace(day=1) - timedelta(days=1)
     return first, last
 
-def weekly_seventh_day(dates):
-    by_week = {}
-    for d in dates:
-        monday = d - timedelta(days=d.weekday())
-        by_week.setdefault(monday, set()).add(d)
-    return sum(1 for days in by_week.values() if len(days) >= 7)
-
 page = st.sidebar.radio(
     "Menü",
     ["📊 Dashboard", "💳 Kart Okutma", "👥 Personeller",
@@ -65,8 +58,7 @@ elif page == "💳 Kart Okutma":
         card = st.text_input(
             "Kart numarası",
             placeholder="Kartı okutun...",
-            label_visibility="collapsed",
-            autofocus=True
+            label_visibility="collapsed"
         )
         submit = st.form_submit_button("Kartı Kaydet", use_container_width=True)
 
@@ -97,9 +89,6 @@ elif page == "👥 Personeller":
             c3, c4 = st.columns(2)
             card_no = c3.text_input("Kart No * — kartı okutabilirsiniz")
             department = c4.text_input("Departman")
-            c5, c6 = st.columns(2)
-            shift_start = c5.time_input("Vardiya başlangıcı", value=time(8, 0))
-            shift_end = c6.time_input("Vardiya bitişi", value=time(17, 0))
             submitted = st.form_submit_button("Personeli Kaydet", use_container_width=True)
 
             if submitted:
@@ -109,8 +98,7 @@ elif page == "👥 Personeller":
                     st.error("Bu kart zaten kayıtlı.")
                 else:
                     add_employee(name.strip(), employee_no.strip(), card_no.strip(),
-                                 department.strip(), shift_start.strftime("%H:%M"),
-                                 shift_end.strftime("%H:%M"))
+                                 department.strip())
                     st.success(f"{name} kaydedildi.")
                     st.rerun()
 
