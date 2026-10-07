@@ -68,9 +68,13 @@ elif page == "💳 Kart Okutma":
         if emp is None:
             st.error(f"Kayıtlı olmayan kart: {card}")
         else:
+            today_punches = get_punches(date.today(), date.today())
+            before_count = len(today_punches[today_punches["Personel"] == emp["name"]])
             now = datetime.now()
             save_punch(emp["id"], card, now)
-            st.success(f"✓ {emp['name']} — {now.strftime('%d.%m.%Y %H:%M:%S')} kaydedildi.")
+
+            status = "Giriş" if before_count == 0 else "Çıkış"
+            st.success(f"Personel {status}: {emp['name']} — {now.strftime('%d.%m.%Y %H:%M:%S')}")
             st.rerun()
 
     st.markdown("### Son okutmalar")
